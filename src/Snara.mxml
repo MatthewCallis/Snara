@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication 
+	creationComplete="onCreationComplete()" 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="absolute" xmlns:local="*" 
+	width="100%" height="100%" 
+	showFlexChrome="false" 
+	frameRate="60" 
+	horizontalScrollPolicy="off" 
+	verticalScrollPolicy="off">
+	<!-- Include our application styles. -->
+	<mx:Style source="styles.css"/>
+
+	<mx:Script>
+		<![CDATA[
+			[Embed(source="embed_assets/Tvoh100.ips",mimeType="application/octet-stream")]
+            [Bindable]
+            private var ipsFile:Class;
+
+			import flash.desktop.Clipboard;
+			import flash.desktop.ClipboardFormats;
+			import flash.desktop.NativeDragManager;
+			import flash.desktop.NativeDragActions;
+			import flash.events.NativeDragEvent;
+			import flash.filesystem.File;
+			import flash.filesystem.FileMode;
+			import flash.filesystem.FileStream;
+			import mx.controls.Alert;
+
+			private function onCreationComplete():void{
+				// register for the drag enter event
+				addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onDragIn);
+				// register for the drag drop event
+				addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onDragDrop);
+			}
+
+			/** This function is used to update the nativeWindow to the size of the content. */
+			private function updateWindowSize():void{
+				if(nativeWindow){
+					nativeWindow.width = topContentContainer.x + topContentContainer.width + 10;
+					nativeWindow.height = topContentContainer.y + topContentContainer.height + 10;
+				}
+			}
+
+			public function onDragIn(e:NativeDragEvent):void{
+				//check and see if files are being drug in
+				if(e.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT)){
+					// get the array of files
+					var files:Array = e.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+					// make sure only one file is dragged in (i.e. this app doesn't
+					// support dragging in multiple files)
+					if(files.length == 1){
+						// accept the drag action
+						NativeDragManager.acceptDragDrop(this);
+					}
+				}
+			}
+
+			public function onDragDrop(event:NativeDragEvent):void{
+				NativeDragManager.dropAction = NativeDragActions.COPY;
+				var dropfiles:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+                for each (var file:File in dropfiles){
+					trace(file.name);
+					openPatch(file);
+				}
+			}
+
+			public function openPatch(file:File):void{
+				var ipsData:ByteArray = new ipsFile();
+				var fs:FileStream = new FileStream();
+				var fileData:ByteArray = new ByteArray();
+				var header:ByteArray = new ByteArray();
+				var temp:ByteArray = new ByteArray();
+				var length:int = 0;
+				var offset:int = 0;
+
+				var rleLength:int = 0;
+				var rleByte:int = 0;
+				// Open the patch file asynchronously
+				fs.open(file, FileMode.READ);
+				// Read the whole patchfile into the byteArray
+				fs.readBytes(fileData, 0, 0);
+				// Check for the 'PATCH' header
+				ipsData.readBytes(header, 0, 5);
+
+				if( (header[0] == 80) && (header[1] == 65) || (header[2] == 84) || (header[3] == 67) || (header[4] == 72) ){
+					trace("IPS Patch File!");
+				}
+
+				ipsData.readBytes(temp, 0, 3);
+				offset = ((temp[0] * 256 * 256) + (temp[1] * 256) + (temp[2])); 
+				trace("Offset: " + offset);
+
+				// Keep going until we run out of bytes or hit "EOF" 4542278 / 0x454F46
+				while( ipsData.bytesAvailable && (offset != 4542278) ){
+					trace("Offset: " + offset);
+					// Seek to the specified offset in the binary
+					fileData.position = offset;
+					// Get the length from the IPS patch
+					ipsData.readBytes(temp, 0, 2);
+					length = (temp[0] * 256) + (temp[1]);
+					trace("Length: " + length);
+					if(length == 0){
+						trace("RLE Byte");
+						// RLE can be up to 0xffff chars long
+						ipsData.readBytes(temp, 0, 2);
+						rleLength = (temp[0] * 256) + (temp[1]);
+						trace("  Leng: " + rleLength);
+						// RLE byte to repeta follows the length
+						ipsData.readBytes(temp, 0, 1);
+						rleByte = (temp[0]);
+						trace("  Byte: " + rleByte);
+						// Loop the length of the RLE, writing the byte each time
+						for(var rleCount:int = 0; rleCount < rleLength; rleCount++){
+							fileData.writeByte(rleByte);
+						}
+					}
+					else{
+						ipsData.readBytes(temp, 0, length);
+						fileData.writeBytes(temp, 0, length);
+					}
+					ipsData.readBytes(temp, 0, 3);
+					offset = ((temp[0] * 256 * 256) + (temp[1] * 256) + (temp[2])); 
+				}
+				fs.close();
+				fs.open(file, FileMode.WRITE);
+				// write bytes from the byte array
+				fs.writeBytes(fileData);
+				// close the file
+				fs.close();
+			}
+
+		]]>
+	</mx:Script>
+
+	<!-- 
+	  - Define a clickable background area that also provides a custom drop-shadow. The size
+	  - of the chrome is bound to the content area size, and we accomodate for the drop-shadow
+	  - by insetting the chrome.
+	  -->
+	<local:BackgroundChrome id="bgBox" x="10" y="8" 
+		width="{ topContentContainer.width }" 
+		height="{ topContentContainer.height }" 
+		mouseDown="nativeWindow.startMove()" minWidth="310" minHeight="80">
+	 	 <!-- We put the title controls here so that the text is draggable via the mouseDown event on parent container. -->
+	 	 <local:TitleControls id="titleControls"/>
+	</local:BackgroundChrome>
+
+	<!-- The main content area.  -->
+	<local:ContentBox id="topContentContainer" x="10" y="8" paddingTop="30" minWidth="310" minHeight="80" resize="callLater(updateWindowSize)" nativeDragEnter="onDragIn(event)" nativeDragDrop="onDragDrop(event)">
+		<mx:Label styleName="gameTitleText" text="Hamelin no Violin Tamaki"/>
+		<mx:Text width="310" condenseWhite="true" fontSize="12" selectable="false">
+			<mx:htmlText>
+				<![CDATA[
+					Drop your ROM file here to be patched.
+				]]>
+			</mx:htmlText>
+		</mx:Text>
+
+		<!-- A button bar to select the view stack index. -->
+		<mx:HBox paddingLeft="2">
+			<mx:Repeater id="rp" dataProvider="{ [ 0, 1 ] }">
+				<mx:Button width="12" height="12" click="viewStack.selectedIndex = event.currentTarget.getRepeaterItem() as Number" selected="{ rp.currentItem == viewStack.selectedIndex }"/>
+			</mx:Repeater>
+		</mx:HBox>
+
+		<!-- The ViewStack containing the dynamically resized content. -->
+		<mx:ViewStack id="viewStack" resizeToContent="true"  width="100%" height="100%" selectedIndex="0" styleName="mainContentContainer" hideEffect="Fade"
+			visible="{ viewStack.selectedIndex != 0 }">
+			<!-- TRICKY: We have this in there to remove the chrome on the base state -->
+			<!-- keep an empty first panel for the base state -->		
+			<mx:VBox/>
+			<mx:VBox id="panel1" width="100%" height="130" showEffect="Fade" hideEffect="Fade" backgroundColor="#bebebe">
+				<mx:Label styleName="gameTitleText" text="About" color="#292827"/>
+				<mx:Text width="300" condenseWhite="true" fontSize="10" selectable="false" color="#393837">
+					<mx:htmlText>
+						<![CDATA[
+							Translation of The Violinist of Hamlin was actually one of J2e's first projects, 
+							but with the large demand over Final Fantasy 4, the amount of time dedicated to the translation 
+							of TVOH dropped to pratically zero, that is, until now.  Over the past few monthes 
+							many assembly modifications have been made to the game, making this a high quality translation.
+						]]>
+					</mx:htmlText>
+				</mx:Text>
+			</mx:VBox>
+		</mx:ViewStack>
+	</local:ContentBox>
+</mx:WindowedApplication>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%">
+	<!--
+	<mx:Label styleName="titleText" text="SNARA"/>
+	-->
+	<mx:Script>
+	<![CDATA[
+		import flash.events.TextEvent;
+		private function linkHandler(event:TextEvent):void{
+			var request:URLRequest = new URLRequest(event.text);
+			request.method = URLRequestMethod.GET;
+			trace(event.type);
+			trace(event.text);
+			navigateToURL(request);
+		}
+	]]>
+	</mx:Script>
+	<mx:Text id="myText" styleName="titleText" link="linkHandler(event);" selectable="true" condenseWhite="true">
+		<mx:htmlText>
+			<![CDATA[
+			<a href='event:http://eludevisibility.org/snara/'>SNARA</a>
+			]]>
+		</mx:htmlText>
+	</mx:Text>
+	<mx:HBox y="4" verticalAlign="top" width="100%" horizontalAlign="right" horizontalGap="0">
+		<mx:Button styleName="appMinimizeButton" click="stage.nativeWindow.minimize()" tabEnabled="false" toolTip="Minimize"/>
+		<mx:Button styleName="appCloseButton" click="NativeApplication.nativeApplication.exit()" tabEnabled="false" toolTip="Close"/>
+	</mx:HBox>
+</mx:Canvas>

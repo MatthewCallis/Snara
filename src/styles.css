@@ -1,0 +1,89 @@
+/* CSS file */
+Application, WindowedApplication{
+	/* make app window transparent */
+	background-alpha: 0; 
+	background-image: ""; 
+	font-family: "Myriad Web";
+	font-size: 12;
+	letter-spacing: 0.0;
+	font-anti-alias-type: advanced;
+	theme-color: #FFFFFF;
+	color: #404040;
+	text-roll-over-color: #404040;
+	text-selected-color: #404040;
+}
+
+Button{
+	up-skin: Embed(source="/embed_assets/components/button_up.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="60", scaleGridBottom="18");
+	over-skin: Embed(source="/embed_assets/components/button_up.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="60", scaleGridBottom="18");
+	down-skin: Embed(source="/embed_assets/components/button_down.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="60", scaleGridBottom="18");
+	disabled-skin: Embed(source="/embed_assets/components/button_disabled.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="60", scaleGridBottom="18");
+	selected-up-skin: Embed(source="/embed_assets/components/button_selected_up.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="60", scaleGridBottom="18");
+	selected-over-skin: Embed(source="/embed_assets/components/button_selected_up.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="60", scaleGridBottom="18");
+	selected-down-skin: Embed(source="/embed_assets/components/button_selected_up.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="60", scaleGridBottom="18");
+}
+
+BackgroundChrome, ContentBox{
+	padding-top: 10;
+	padding-bottom: 10;
+	padding-left: 10;
+	padding-right: 10;	
+}
+
+BackgroundChrome{
+	corner-radius: 6;
+	border-style: solid;
+	border-color: #EFEFEF;
+	background-color: #EFEFEF;
+	background-alpha: 1;
+}
+
+.mainContentContainer{
+	padding-top: 8;
+	padding-bottom: 8;
+	padding-left: 8;
+	padding-right: 8;
+	border-style: solid;
+	background-color: #BBBBBB;
+  	border-color: #FDFDFD;
+}
+
+.titleText, .titleTextRed{
+	color: #3D3D3D;
+	font-family: "Myriad Pro Black";
+}
+.gameTitleText{
+	color: #191817;
+	font-zie: 13;
+	font-family: "Myriad Pro Black";
+}
+
+.appMinimizeButton{
+	up-skin: Embed("/embed_assets/titlebar/minimize_up.png");
+	over-skin: Embed("/embed_assets/titlebar/minimize_over.png");
+	down-skin: Embed("/embed_assets/titlebar/minimize_pressed.png");	
+}
+
+.appCloseButton{
+	up-skin: Embed("/embed_assets/titlebar/close_up.png");
+	over-skin: Embed("/embed_assets/titlebar/close_over.png");
+	down-skin: Embed("/embed_assets/titlebar/close_pressed.png");	
+}
+
+@font-face {
+	src:url("/embed_assets/fonts/MYRIAD.TTF");
+	font-family: "Myriad Web";
+	advanced-anti-aliasing: true;
+}
+
+@font-face{
+	src:url("/embed_assets/fonts/MYRIADB_0.TTF");
+	font-family: "Myriad Web";
+	font-weight: bold;
+	advanced-anti-aliasing: true;
+}
+
+@font-face{
+	src:url("/embed_assets/fonts/otf_fonts.swf");
+	font-family: "Myriad Pro Black";
+}

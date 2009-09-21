@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- This is a simple extension of a VBox that is set to be easily resizable -->
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalScrollPolicy="off" verticalScrollPolicy="off" verticalGap="2" resizeEffect="{ resizeEffect }">
+	<!-- This is a top-level Resize effect that we will use whenever the main content area size changes. -->
+	<mx:Resize id="resizeEffect" duration="500"/>
+</mx:VBox>
