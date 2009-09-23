@@ -83,6 +83,14 @@
 				// Check for the 'PATCH' header
 				ipsData.readBytes(header, 0, 5);
 
+				trace(fileData.length);
+				if((fileData.length & 0x200) == 0x200){
+					trace("Header");	
+				}
+				else{
+					trace("No Header");
+				}
+
 				if( (header[0] == 80) && (header[1] == 65) || (header[2] == 84) || (header[3] == 67) || (header[4] == 72) ){
 					trace("IPS Patch File!");
 				}
